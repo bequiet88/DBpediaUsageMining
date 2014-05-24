@@ -481,7 +481,7 @@ object ClusterGrouper extends RankingAlgorithm[PairCounterRow, (List[(String, St
         options(2) = "-A"; // distance function
         options(3) = "de.unimannheim.dws.algorithms.CustomPairWiseDistance"
         options(4) = "-L"; // Link type
-        options(5) = "WARD"
+        options(5) = "MEAN"
         options(6) = "-P"
         //                options(7) = "-B" // If set, distance is interpreted as branch length, otherwise it is node height.  
         var clusterer: HierarchicalClusterer = new HierarchicalClusterer() // new instance of clusterer
