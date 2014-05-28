@@ -151,7 +151,7 @@ object ClusterGrouperController extends App {
     val subjTriples = listTriples.filter(_._1.equals(entity))
     val objTriples = listTriples.filterNot(_._1.equals(entity))
 
-    val optionsList: List[Array[String]] = List(Array[String]("-O", "-C", "CustomKMedoids", "-P", "-R", "7") /*,
+    val optionsList: List[Array[String]] = List(Array[String]("-O", "-C", "HierarchicalClusterer", "-P", "-R", "7") /*,
       Array[String]("-C", "CustomKMedoids","-P"),
       Array[String]("-C", "CustomKMedoids","-R","7"),
       Array[String]("-C", "CustomKMedoids"),
