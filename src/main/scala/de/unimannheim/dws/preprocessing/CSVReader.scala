@@ -25,19 +25,25 @@ object CSVReader extends App {
 
   val reader = Source.fromFile(input).reader
 
-  val parser = CSVFormat.DEFAULT.parse(reader);
+  val parser = CSVFormat.DEFAULT.parse(reader).getRecords().asScala.toList;
   //				CSVFormat.EXCEL.parse(reader);
 
-  val res = parser.iterator().asScala.foldLeft(List[(String, String, String)]())((i, row) => {
-    val elems = row.iterator().asScala.toList
-    if(i.size%10000 == 0) println(i.size);
-    i :+ (elems(0), elems(1), elems(2))
+  val res = parser.map(row => {
+	  if(row.getRecordNumber()%10000 == 0) println(row.getRecordNumber());
+    (row.get(0), row.get(1), row.get(2))    
   })
+  
+  
+//  foldLeft(List[(String, String, String)]())((i, row) => {
+////    val elems = row.iterator().asScala.toList
+//    if(i.size%10000 == 0) println(i.size);
+//    i :+ (row.get(0), row.get(1), row.get(2))
+//  })
 
   val patternDistribution2 = res.groupBy(l => l).map(t => (t._1, t._2.length))
     .toList.sortBy({ _._2 }).map(f => ("" + f._1, "" + f._2, "" + BigDecimal(f._2.toFloat / res.size).setScale(2, BigDecimal.RoundingMode.HALF_UP))).reverse
 
-  writeOutputToFile("Main triple pattern types", res.+:(("Pattern", "Abs. Number", "Rel. Number")).slice(0, 11))
+  writeOutputToFile("Main triple pattern types", patternDistribution2.+:(("Pattern", "Abs. Number", "Rel. Number")).slice(0, 11))
   /*  
    *  Anonymous function to write data to the open csv file
    */
