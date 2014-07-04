@@ -49,30 +49,31 @@ abstract class RankingAlgorithm[T, S] {
   /**
    * Print the result to file
    */
-  def printResults(triples: List[((String, String, String), String)], options: Array[String], clusterInfo: String, entity: String): Any = {
+  def printResults(options: Array[String], entity: String, modelEval: ModelEval): Any = {
 
     val label = entity.split("/").last
     
     val fileName = options.foldLeft(new StringBuilder())((i, row) => {
       if (i.length() == 0) {
-        if (clusterInfo.length() == 0) i.append(label + "_counter_" + row)
-        else i.append(label + "_cluster_" + row)
-      } else i.append("_" + row)
+        if(modelEval.clusterInfo.length()==0) i.append(label + "_counter_" + row)
+        else         i.append(label + "_cluster_" + row)
+      }
+      else i.append("_" + row)
     })
 
-    val file: File = new File("D:/ownCloud/Data/Studium/Master_Thesis/04_Data_Results/rankings/" + fileName + ".txt");
+    val file: File = new File("D:/ownCloud/Data/Studium/Master_Thesis/04_Data_Results/rankings/" + label + "_time/" + fileName + ".txt");
     file.getParentFile().mkdirs();
 
     val out: BufferedWriter = new BufferedWriter(new FileWriter(file));
 
     // clusterInfo
-    if (clusterInfo.length() > 0) {
-      out.write(clusterInfo)
+    if (modelEval.clusterInfo.length() > 0) {
+      out.write(modelEval.clusterInfo)
       out.newLine()
     }
 
     // Ranked triples
-    triples.foldLeft("")((i, row) => {
+    modelEval.triples.foldLeft("")((i, row) => {
       if (row._2.equals(i)) {
         out.write(row._2 + " " + row._1._1 + " " + row._1._2 + " " + row._1._3)
         out.newLine()
@@ -91,10 +92,6 @@ abstract class RankingAlgorithm[T, S] {
     out.flush()
     out.close()
 
-  }
-
-  def printResults(triples: List[((String, String, String), String)], options: Array[String], entity: String): Any = {
-    printResults(triples, options, "", entity)
   }
 
 }

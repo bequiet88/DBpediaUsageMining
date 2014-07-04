@@ -108,12 +108,14 @@ object ClusterGrouper extends RankingAlgorithm[PairCounterRow, (List[(String, St
     val distanceMatrix = calculateDistanceMatrix(triplesFiltered, options)
 
     // Prints a Pajek compatible net
-    printDistanceMatrixAsNet(triples.head._1, distanceMatrix._2, distanceMatrix._4)
+//    printDistanceMatrixAsNet(triples.head._1, distanceMatrix._2, distanceMatrix._4)
     printDistanceMatrix(triples.head._1, distanceMatrix._1)
 
     // Pushes the Distance Matrix to the Interoperability Class
     DistanceMatrix.setDistanceMatrix(convertDistanceMatrixToWeka(distanceMatrix._1))
 
+    
+    
     /*
      * Instantiate WEKA, see 
      * - http://weka.wikispaces.com/Creating+an+ARFF+file
@@ -481,8 +483,8 @@ object ClusterGrouper extends RankingAlgorithm[PairCounterRow, (List[(String, St
         options(2) = "-A"; // distance function
         options(3) = "de.unimannheim.dws.algorithms.CustomPairWiseDistance"
         options(4) = "-L"; // Link type
-        options(5) = "MEAN"
-        options(6) = "-P"
+        options(5) = "SINGLE"
+        options(6) = "-P" // prints newick tree
         //                options(7) = "-B" // If set, distance is interpreted as branch length, otherwise it is node height.  
         var clusterer: HierarchicalClusterer = new HierarchicalClusterer() // new instance of clusterer
         clusterer.setOptions(options) // set the options

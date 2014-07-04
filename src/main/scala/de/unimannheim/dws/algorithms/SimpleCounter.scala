@@ -198,7 +198,7 @@ object SimpleCounter extends RankingAlgorithm[ClassPropertyCounterRow, List[(Str
 
       val superClasses = ontClass.listSuperClasses().asScala.toList diff List(ontClass)
       val superResMapPropIds = {
-        if (subClasses.size > 0) {
+        if (superClasses.size > 0) {
           resMapGenerator(propertiesAll, subResMapPropIds._2, superClasses, subResMapPropIds._1, 1D)
         } else {
           (Map[String, Double](), subResMapPropIds._2)

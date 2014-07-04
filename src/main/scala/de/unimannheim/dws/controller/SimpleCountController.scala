@@ -11,6 +11,8 @@ import scala.io.Source
 import java.io.File
 import de.unimannheim.dws.model.ExchangeRDFTriple
 import scala.collection.JavaConverters._
+import de.unimannheim.dws.algorithms.ModelEval
+import de.unimannheim.dws.algorithms.Stopwatch
 
 object SimpleCountController extends App {
   DbConn.openConn withSession { implicit session =>
@@ -65,55 +67,15 @@ object SimpleCountController extends App {
     }
   }
 
-  private def readClassPropertyPairs(file: File)(implicit session: slick.driver.PostgresDriver.backend.Session) = {
-    val listLines: List[String] = Source.fromFile(file, "UTF-8").getLines.toList
-
-    val listTriples = listLines.map(l => {
-      val split = l.split(" ").toList
-      if (split.size == 3) {
-        (split(0), split(1), split(2))
-      } else if (split.size > 3) {
-        val objectLiteral = split.slice(2, split.size).foldLeft(new StringBuilder())((i, row) => {
-          i.append(row + " ")
-        })
-        (split(0), split(1), objectLiteral.toString)
-      } else {
-        ("", "", "")
-      }
-    })
-
-    val entity = listTriples.head._1 //.split("/").last
-
-    val optionsList: List[Array[String]] = List(Array[String]("-O", "-S", "interval", "-N", "3", "-R", "7") /*,
-      Array[String]("-O","-S", "interval", "-N", "3"),
-      Array[String]("-O","-S", "frequency", "-N", "3", "-R", "7"),
-      Array[String]("-O","-S", "frequency", "-N", "3")*/ )
-
-    optionsList.foreach(o => {
-
-      val options = o
-      val countRes = SimpleCounter.retrieve(listTriples, options, entity)
-      //      countRes.map(r => println(r))
-
-      val resList = SimpleCounter.getRankedTriples(listTriples, countRes)
-
-      SimpleCounter.printResults(resList, options, entity)
-
-      resList.map(r => println(r))
-
-    })
-
-  }
-
   def readObjectClassPropertyPairsList(javaList: java.util.List[ExchangeRDFTriple], options: Array[String], entity: String): java.util.List[ExchangeRDFTriple] = {
     DbConn.openConn withSession { implicit session =>
       val scalaList = javaList.asScala.toList
 
-//      val entity = scalaList.head.getSub() //.split("/").last
+      //      val entity = scalaList.head.getSub() //.split("/").last
 
       val subjTriples = scalaList.filter(_.getSub.equals(entity)).map(t => (t.getSub, t.getPred, t.getObj))
       val objTriples = scalaList.filterNot(_.getSub.equals(entity)).map(t => (t.getSub, t.getPred, t.getObj))
-      
+
       val resList = countObjectClassPropertyPairs(subjTriples, objTriples, options, entity)
 
       resList.map(t => new ExchangeRDFTriple(t._1._1, t._1._2, t._1._3, t._2)).asJava
@@ -149,8 +111,12 @@ object SimpleCountController extends App {
       Array[String]("-O","-S", "frequency", "-N", "3")*/ )
 
     optionsList.foreach(o => {
+      val sw = new Stopwatch
+      sw.start
       val resList = countObjectClassPropertyPairs(subjTriples, objTriples, o, entity)
-      SimpleCounter.printResults(resList, o, entity)
+      val time = sw.elapsedTime
+      val modelEval = ModelEval("", time, resList)
+      SimpleCounter.printResults(o, entity, modelEval)
       resList.map(r => println(r))
     })
 
@@ -162,13 +128,15 @@ object SimpleCountController extends App {
       SimpleCounter.getRankedTriples(subjTriples, counterRes)
     }
 
-    val objResList = {
-      val counterRes = SimpleCounter.retrieve(objTriples, options, entity)
-      val counterResList = counterRes.map(p => (p._1, "Object " + p._2, p._3))
-      SimpleCounter.getRankedTriples(objTriples, counterResList)
-    }
+    if (objTriples.size > 0) {
+      val objResList = {
+        val counterRes = SimpleCounter.retrieve(objTriples, options, entity)
+        val counterResList = counterRes.map(p => (p._1, "Object " + p._2, p._3))
+        SimpleCounter.getRankedTriples(objTriples, counterResList)
+      }
 
-    subjResList ++ objResList
+      subjResList ++ objResList
+    } else subjResList
 
   }
 
