@@ -67,7 +67,7 @@ object LogFileParser {
         time = result(4).trim(),
         timezone = result(5).trim(),
         requestMethod = result(6).trim(),
-        request = Map(requestTupleList: _*).filter(request => request._2.length() > 8),
+        request = Map(requestTupleList: _*),
         requestProtocol = result(8).trim(),
         httpStatus = result(9).trim())
     } else

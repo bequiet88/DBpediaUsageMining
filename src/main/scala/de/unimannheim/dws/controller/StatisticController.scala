@@ -81,17 +81,12 @@ object StatisticController extends App {
     println("SPARQL Query-type break down");
     val successQueriesQ = SparqlQueries.filter(q => q.containsErrors === "false").length
     val successQueries = successQueriesQ.run
-    //      SparqlQueryDAO.find(ref = MongoDBObject("containsErrors" -> false))
-    //      //    .sort(orderBy = MongoDBObject("_id" -> -1)) // sort by _id desc
-    //      //    .skip(1)
-    //      //    .limit(613)
-    //      .toList
 
-    val selectQueriesQ = SparqlQueries.filter(q => (q.containsErrors === "false") && (q.query like ("%SELECT%"))).length
+    val selectQueriesQ = SparqlQueries.filter(q => (q.containsErrors === "false") && (q.query.toLowerCase like ("%select%"))).length
     val selectQueries = selectQueriesQ.run
-    val describeQueries = SparqlQueries.filter(q => (q.containsErrors === "false") && (q.query like ("%DESCRIBE%"))).length.run
-    val askQueries = SparqlQueries.filter(q => (q.containsErrors === "false") && (q.query like ("%ASK%"))).length.run
-    val constructQueries = SparqlQueries.filter(q => (q.containsErrors === "false") && (q.query like ("%CONSTRUCT%"))).length.run
+    val describeQueries = SparqlQueries.filter(q => (q.containsErrors === "false") && (q.query.toLowerCase like ("%describe%"))).length.run
+    val askQueries = SparqlQueries.filter(q => (q.containsErrors === "false") && (q.query.toLowerCase like ("%ask%"))).length.run
+    val constructQueries = SparqlQueries.filter(q => (q.containsErrors === "false") && (q.query.toLowerCase like ("%construct%"))).length.run
     val errorQueries = SparqlQueries.filter(q => (q.containsErrors === "true")).length.run
 
     val queryBreakDown = List(
@@ -109,7 +104,7 @@ object StatisticController extends App {
    */
     println("SELECT queries with N triple pattern");
         val simpleTriples = (for {
-          q <- SparqlQueries if q.query like ("%SELECT%")
+          q <- SparqlQueries if q.query.toLowerCase like ("%select%")
           t <- SimpleTriples if t.queryId === q.id
         } yield (q, t)).groupBy(_._1.id)
     
@@ -117,43 +112,6 @@ object StatisticController extends App {
           case (queryId, triples) =>
             (queryId, triples.length)
         }.list
-
-//    val queryTripleOccurrencesQ = (for {
-//      q <- SparqlQueries if q.query like ("%SELECT%") // inSetBind selectQueries.map(_.id)
-//      t <- SimpleTriples if t.queryId === q.id
-//    } yield (q.id, t))
-//
-//    println(queryTripleOccurrencesQ.selectStatement);
-//
-//    val queryTripleOccurrences = queryTripleOccurrencesQ.foldLeft(Map[(Long), (List[SimpleTriplesRow], Int)]())((i, row) => {
-//
-//      if (i.contains(row._1)) {
-//        i + (((row._1), (i(row._1)._1 :+ row._2, i(row._1)._2 + 1)))
-//      } else {
-//        i + (((row._1), (List(row._2), 1)))
-//      }
-//    })
-
-    //    val queryTripleOccurrences = {
-    //      val groupedTriples = simpleTriples.groupBy(_._1).toList
-    //      groupedTriples.map(gp => {
-    //        (gp._1, gp._2.map(_._2), gp._2.size)
-    //      })
-    //    }
-
-    //      
-    //      for {
-    //      // zipwithIndex returns no of current iteration
-    //      (query, index) <- selectQueries.zipWithIndex
-    //      triples = {
-    //        simpleTriples.filter(_.queryId == query._id)
-    //      }
-    //      n = triples.size
-    //      printer = println(index)
-    //    } yield {
-    //
-    //      (query, triples, n)
-    //    }
 
     val noOfTriples = queryTripleOccurrences.map(_._2)
 
@@ -167,19 +125,16 @@ object StatisticController extends App {
    */
     println("Main Triple-pattern types");
         
-    val queryTripleTypes =  Q.queryNA[(String, String, String)]("select s57.subj_type, s57.pred_type, s57.obj_type from sparql_queries s55, simple_triples s57 where (s55.query like '%SELECT%') and s57.query_id = s55.id").list   
-//    val allPatternTriples =  (for {
-//      (key, value) <- queryTripleOccurrences
-//    } yield { value._1 }).asInstanceOf[List[List[SimpleTriplesRow]]]
-//
-//    val patternTypes = (for {
-//      triple <- allPatternTriples.flatten
-//    } yield "(" + triple.subjType.get + "," + triple.predType.get + "," + triple.objType.get + ")")
+    val queryTripleTypes =  Q.queryNA[(String, String, String)]("select s57.subj_type, s57.pred_type, s57.obj_type from sparql_queries s55, simple_triples s57 where (lower(s55.query) like '%select%') and s57.query_id = s55.id")  
 
-    val patternDistribution = queryTripleTypes.groupBy(l => l).map(t => (t._1, t._2.length))
-      .toList.sortBy({ _._2 }).map(f => ("" + f._1, "" + f._2, "" + BigDecimal(f._2.toFloat / queryTripleTypes.size).setScale(2, BigDecimal.RoundingMode.HALF_UP))).reverse
 
-    writeOutputToFile("Main triple pattern types", patternDistribution.+:(("Pattern", "Abs. Number", "Rel. Number")).slice(0, 11))
+    val patternDistribution = queryTripleTypes.list
+    
+    
+    val patternDistribution2 = patternDistribution.groupBy(l => l).map(t => (t._1, t._2.length))
+      .toList.sortBy({ _._2 }).map(f => ("" + f._1, "" + f._2, "" + BigDecimal(f._2.toFloat / patternDistribution.size).setScale(2, BigDecimal.RoundingMode.HALF_UP))).reverse
+
+    writeOutputToFile("Main triple pattern types", patternDistribution2.+:(("Pattern", "Abs. Number", "Rel. Number")).slice(0, 11))
 
     /*
    * Predicates used in 1-pattern queries

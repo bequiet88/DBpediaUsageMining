@@ -57,19 +57,24 @@ object LogFileController extends App {
         new Regex("([A-Z]+/\\d\\.\\d)\" "), // request protocol
         new Regex("(\\d+) ")) // response status code
 
-      val logs = for {
-        line <- Source.fromFile(source).getLines()
-        o = LogFileParser.parse(format, line)
+      val logs = (for {
+        line <- Source.fromFile(source).getLines().toList        
       } yield {
+        val o = LogFileParser.parse(format, line)
         o
-      }
+      })
+      
+
 
       val cleanLogs = logs.filter(q => q != null)
-
+      
+      val sizeClean = logs.size
+      
+      
       /*
        * Dump to mongoDB
        */
-      CommonLogFileDAO.insert(cleanLogs.toList)
+      CommonLogFileDAO.insert(cleanLogs)
 
       //  val o_* = CommonLogFileDAO.find(ref = MongoDBObject("ip" -> "00cf8964d7c730b8e6e4cf2efe5d0d11"))
       //        .sort(orderBy = MongoDBObject("_id" -> -1)) // sort by _id desc
