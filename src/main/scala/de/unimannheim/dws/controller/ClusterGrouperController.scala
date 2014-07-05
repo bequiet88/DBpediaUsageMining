@@ -16,7 +16,7 @@ import de.unimannheim.dws.algorithms.ModelEval
 object ClusterGrouperController extends App {
   DbConn.openConn withSession { implicit session =>
 
-    val testFiles = List("matrix") //"bawü", "einstein", "germany", "hockenheim", "matrix")
+    val testFiles = List("berlin", "bawü", "einstein", "germany", "hockenheim", "matrix")
 
     testFiles.foreach(f => {
       val file: File = new File("D:/ownCloud/Data/Studium/Master_Thesis/04_Data_Results/testdata/" + f + "_test_triples.txt")
@@ -108,7 +108,7 @@ object ClusterGrouperController extends App {
     val subjTriples = listTriples.filter(_._1.equals(entity))
     val objTriples = listTriples.filterNot(_._1.equals(entity))
 
-    val optionsList: List[Array[String]] = List(Array[String]("-C", "HierarchicalClusterer") /*Array[String]("-O", "-C", "CustomKMedoids", "-P", "-R", "7") ,
+    val optionsList: List[Array[String]] = List(/*Array[String]("-C", "CustomKMedoids", "-P", "-R", "7") ,
       Array[String]("-C", "CustomKMedoids","-P"),
       Array[String]("-C", "CustomKMedoids","-R","7"),
       Array[String]("-C", "CustomKMedoids"),
@@ -118,8 +118,8 @@ object ClusterGrouperController extends App {
       Array[String]("-C", "DBSCAN"),
       Array[String]("-C", "HierarchicalClusterer","-P","-R","7"),
       Array[String]("-C", "HierarchicalClusterer","-P"),
-      Array[String]("-C", "HierarchicalClusterer","-R","7"),
-      Array[String]("-C", "HierarchicalClusterer")*/ )
+      Array[String]("-C", "HierarchicalClusterer","-R","7"),*/
+      Array[String]("-C", "HierarchicalClusterer", "-L", "Complete"))
 
     optionsList.foreach(o => {
 

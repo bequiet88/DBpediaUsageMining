@@ -89,7 +89,7 @@ object ClusterGrouper extends RankingAlgorithm[PairCounterRow, (List[(String, St
 
     // Use only Triples with URI object - if activated
     val triplesFiltered = {
-      if (options.contains("-L")) {
+      if (options.contains("-U")) {
         triples.filter(t => t._3.startsWith("http"))
       } else triples
     }
@@ -483,7 +483,7 @@ object ClusterGrouper extends RankingAlgorithm[PairCounterRow, (List[(String, St
         options(2) = "-A"; // distance function
         options(3) = "de.unimannheim.dws.algorithms.CustomPairWiseDistance"
         options(4) = "-L"; // Link type
-        options(5) = "SINGLE"
+        options(5) = "COMPLETE"
         options(6) = "-P" // prints newick tree
         //                options(7) = "-B" // If set, distance is interpreted as branch length, otherwise it is node height.  
         var clusterer: HierarchicalClusterer = new HierarchicalClusterer() // new instance of clusterer
