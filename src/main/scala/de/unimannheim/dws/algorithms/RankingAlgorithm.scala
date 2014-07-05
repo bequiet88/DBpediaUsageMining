@@ -27,7 +27,7 @@ abstract class RankingAlgorithm[T, S] {
     /* Returns 
      * 1. a list of ranked triples according the ranking of their properties
      * 2. a map of remaining properties and their triples holding all props that does not occur in the ranked property list
-     */    
+     */
     val resultCols = list.foldLeft((List[((String, String, String), String)](), groupedTriples)) { (i, row) =>
       {
         val values = i._2.get(row._1).getOrElse(List()).map(t => (t, row._2))
@@ -35,15 +35,15 @@ abstract class RankingAlgorithm[T, S] {
         (i._1 ++ ((values)), i._2.filterNot(r => r._1 == row._1))
       }
     }
-    
-    val remainingTriples = resultCols._2.foldLeft(List[((String, String, String),String)]()) { (i, row) =>
+
+    val remainingTriples = resultCols._2.foldLeft(List[((String, String, String), String)]()) { (i, row) =>
       {
         val values = row._2.map(t => (t, "noise"))
         i ++ values
       }
     }.sortBy(_._1._2)
 
-    resultCols._1++remainingTriples
+    resultCols._1 ++ remainingTriples
   }
 
   /**
@@ -52,19 +52,22 @@ abstract class RankingAlgorithm[T, S] {
   def printResults(options: Array[String], entity: String, modelEval: ModelEval): Any = {
 
     val label = entity.split("/").last
-    
+
     val fileName = options.foldLeft(new StringBuilder())((i, row) => {
       if (i.length() == 0) {
-        if(modelEval.clusterInfo.length()==0) i.append(label + "_counter_" + row)
-        else         i.append(label + "_cluster_" + row)
-      }
-      else i.append("_" + row)
+        if (modelEval.clusterInfo.length() == 0) i.append(label + "_counter_" + row)
+        else i.append(label + "_cluster_" + row)
+      } else i.append("_" + row)
     })
 
-    val file: File = new File("D:/ownCloud/Data/Studium/Master_Thesis/04_Data_Results/rankings/" + label + "_time/" + fileName + ".txt");
+    val file: File = new File("D:/ownCloud/Data/Studium/Master_Thesis/04_Data_Results/modelEval/" + label + "/" + fileName + ".txt");
     file.getParentFile().mkdirs();
 
     val out: BufferedWriter = new BufferedWriter(new FileWriter(file));
+
+    // model eval
+    out.write(modelEval.getNoiseRel + " " + modelEval.getTime + " " + modelEval.getNoClusters + " " + modelEval.getAvgElemCluster + " " + modelEval.getElemClustSD)
+    out.newLine()
 
     // clusterInfo
     if (modelEval.clusterInfo.length() > 0) {

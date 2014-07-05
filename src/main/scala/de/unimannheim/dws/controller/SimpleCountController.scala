@@ -17,10 +17,10 @@ import de.unimannheim.dws.algorithms.Stopwatch
 object SimpleCountController extends App {
   DbConn.openConn withSession { implicit session =>
 
-    val testFiles = List("bawü") //, "einstein", "germany", "hockenheim", "matrix")
+    val testFiles = List("berlin", "bawü", "einstein", "germany", "hockenheim", "matrix")
 
     testFiles.foreach(f => {
-      val file: File = new File("D:/ownCloud/Data/Studium/Master_Thesis/04_Data_Results/testdata/" + f + "_test_triples_with_object.txt")
+      val file: File = new File("D:/ownCloud/Data/Studium/Master_Thesis/04_Data_Results/testdata/" + f + "_test_triples.txt")
       readObjectClassPropertyPairsFile(file)
 
     })
@@ -105,15 +105,16 @@ object SimpleCountController extends App {
     val subjTriples = listTriples.filter(_._1.equals(entity))
     val objTriples = listTriples.filterNot(_._1.equals(entity))
 
-    val optionsList: List[Array[String]] = List(Array[String]("-O", "-S", "interval", "-N", "3", "-R", "7") /*,
-      Array[String]("-O","-S", "interval", "-N", "3"),
-      Array[String]("-O","-S", "frequency", "-N", "3", "-R", "7"),
-      Array[String]("-O","-S", "frequency", "-N", "3")*/ )
+    val optionsList: List[Array[String]] = List(Array[String]("-S", "interval", "-N", "3", "-R", "7") ,
+      Array[String]("-S", "interval", "-N", "3"),
+      Array[String]("-S", "frequency", "-N", "3", "-R", "7"),
+      Array[String]("-S", "frequency", "-N", "3") )
 
     optionsList.foreach(o => {
       val sw = new Stopwatch
       sw.start
       val resList = countObjectClassPropertyPairs(subjTriples, objTriples, o, entity)
+      sw.stop
       val time = sw.elapsedTime
       val modelEval = ModelEval("", time, resList)
       SimpleCounter.printResults(o, entity, modelEval)
